@@ -1,0 +1,30 @@
+package app.ledger.ui
+
+/** Stroke icons from the design (24×24 viewBox) as SVG path data. Circles and rects are converted to paths. */
+object Icons {
+    const val sun = "M8 12a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+    const val moon = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"
+    const val plus = "M12 5v14M5 12h14"
+    const val calendar = "M6 5h12a3 3 0 0 1 3 3v10a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-10a3 3 0 0 1 3 -3ZM3 10h18M8 3v4M16 3v4"
+    const val trendUp = "m3 17 6-6 4 4 8-8M14 7h7v7"
+    const val trendDown = "m3 7 6 6 4-4 8 8M14 17h7v-7"
+    const val flat = "M5 12h14"
+    const val arrowIn = "M17 7 7 17M17 17H7V7"
+    const val arrowOut = "M7 7h10v10M7 17 17 7"
+    const val userPlus = "M5 8a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M3 21a6 6 0 0 1 12 0M19 8v6M16 11h6"
+    const val chevron = "m9 18 6-6-6-6"
+    const val search = "M4 11a7 7 0 1 0 14 0a7 7 0 1 0 -14 0m20 20-3.5-3.5"
+    const val sync = "M21 12a9 9 0 0 0-15-6.7L3 8M3 3v5h5M3 12a9 9 0 0 0 15 6.7l3-2.7M16 16h5v5"
+    const val close = "M18 6 6 18m6 6 12 12"
+    const val notebook = "M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4M2 6h4M2 10h4M2 14h4M2 18h4M21.38 5.63a2.12 2.12 0 0 0-3-3l-7.39 7.4a2 2 0 0 0-.5.84l-.83 2.87a.5.5 0 0 0 .62.62l2.87-.84a2 2 0 0 0 .84-.5Z"
+    const val clock = "M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0M12 7v5l3 2"
+    const val check = "m5 12 5 5 9-10"
+    const val tick = "M20 6 9 17l-5-5"
+    const val bell = "M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"
+    const val userAlert = "M5 8a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M3 21a6 6 0 0 1 12 0M19 8v5M19 17h.01"
+    const val lock = "M6 11h12a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-6a2 2 0 0 1 2 -2ZM8 11V7a4 4 0 0 1 8 0v4"
+    const val download = "M12 3v12m7 10 5 5 5-5M5 21h14"
+    const val tabOverview = "M4.5 3h4a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1 -1.5 1.5h-4a1.5 1.5 0 0 1 -1.5 -1.5v-6a1.5 1.5 0 0 1 1.5 -1.5ZM15.5 3h4a1.5 1.5 0 0 1 1.5 1.5v2a1.5 1.5 0 0 1 -1.5 1.5h-4a1.5 1.5 0 0 1 -1.5 -1.5v-2a1.5 1.5 0 0 1 1.5 -1.5ZM15.5 12h4a1.5 1.5 0 0 1 1.5 1.5v6a1.5 1.5 0 0 1 -1.5 1.5h-4a1.5 1.5 0 0 1 -1.5 -1.5v-6a1.5 1.5 0 0 1 1.5 -1.5ZM4.5 16h4a1.5 1.5 0 0 1 1.5 1.5v2a1.5 1.5 0 0 1 -1.5 1.5h-4a1.5 1.5 0 0 1 -1.5 -1.5v-2a1.5 1.5 0 0 1 1.5 -1.5Z"
+    const val tabRecords = "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
+    const val tabSettings = "M20 7h-9M14 17H5M14 17a3 3 0 1 0 6 0a3 3 0 1 0 -6 0M4 7a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"
+}
