@@ -164,14 +164,19 @@ class LedgerColors {
 }
 
 class LedgerTheme extends InheritedWidget {
-  const LedgerTheme({super.key, required this.colors, required super.child});
+  const LedgerTheme({super.key, required this.colors, this.systemPalette, required super.child});
 
   final LedgerColors colors;
 
+  /// The wallpaper palette, when this device has one to offer.
+  final Palette? systemPalette;
+
   static LedgerColors of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<LedgerTheme>()!.colors;
 
+  static Palette? systemPaletteOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<LedgerTheme>()!.systemPalette;
+
   @override
-  bool updateShouldNotify(LedgerTheme old) => old.colors.palette != colors.palette || old.colors.dark != colors.dark;
+  bool updateShouldNotify(LedgerTheme old) => old.colors.palette != colors.palette || old.colors.dark != colors.dark || old.systemPalette != systemPalette;
 }
 
 extension LedgerContext on BuildContext {

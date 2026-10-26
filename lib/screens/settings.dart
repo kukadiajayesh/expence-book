@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
 import '../store.dart';
+import '../system_palette.dart' show systemPaletteKey;
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/net_card.dart' show DotGridPainter;
@@ -93,14 +94,14 @@ class SettingsScreen extends StatelessWidget {
           switchRow(1, Ico.moon, 'Dark appearance', store.dark, store.setDark, divider: false),
         ]),
         const SizedBox(height: 28),
-        SectionLabel('Color theme', trailing: paletteFor(store.palette).name),
+        SectionLabel('Color theme', trailing: (store.palette == systemPaletteKey ? LedgerTheme.systemPaletteOf(context) : null)?.name ?? paletteFor(store.palette).name),
         const SizedBox(height: 8),
         GridView(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 10, crossAxisSpacing: 10, mainAxisExtent: 116),
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           padding: EdgeInsets.zero,
-          children: [for (final p in palettes) _PaletteCard(palette: p, selected: p.key == store.palette, onTap: () => store.setPalette(p.key))],
+          children: [for (final p in [?LedgerTheme.systemPaletteOf(context), ...palettes]) _PaletteCard(palette: p, selected: p.key == store.palette, onTap: () => store.setPalette(p.key))],
         ),
         const SizedBox(height: 28),
         const SectionLabel('Notifications'),
