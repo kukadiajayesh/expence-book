@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart' show Material, MaterialType;
 import 'package:flutter/services.dart';
@@ -34,6 +33,8 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
   String tab = 'home'; // 'home' | 'list' | 'settings'
   String filter = 'all';
   String? person;
+  String query = '';
+  final search = TextEditingController();
   bool collapsed = false;
   ({String msg, VoidCallback? undo})? toast;
   Timer? _toastTimer;
@@ -52,6 +53,7 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
     for (final c in [form, follow, confirm]) {
       c.dispose();
     }
+    search.dispose();
     formScroll.dispose();
     followScroll.dispose();
     draft.dispose();
@@ -72,6 +74,11 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
   void hideToast() {
     _toastTimer?.cancel();
     setState(() => toast = null);
+  }
+
+  void exportCsv() {
+    Clipboard.setData(ClipboardData(text: store.toCsv()));
+    showToast(store.records.isEmpty ? 'No transactions to export' : 'CSV copied to clipboard');
   }
 
   void openForm(Txn? r) {
@@ -106,6 +113,8 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
         tab = 'home';
         filter = 'all';
         person = null;
+        query = '';
+        search.clear();
         collapsed = false;
         toast = null;
       });
@@ -171,7 +180,7 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
                     child: Transform(
                       alignment: Alignment.topCenter,
                       transform: Matrix4.translationValues(0, 12 * p, 0)..scaleByDouble(1 - 0.07 * p, 1 - 0.07 * p, 1, 1),
-                      child: ClipRRect(borderRadius: BorderRadius.circular(46 * math.min(1, p * 4)), child: child),
+                      child: p == 0 ? child : ClipRRect(borderRadius: BorderRadius.circular(46 * math.min(1, p * 4)), clipBehavior: Clip.hardEdge, child: child),
                     ),
                   );
                 },
@@ -243,12 +252,15 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
           store: store,
           filter: filter,
           person: person,
+          query: query,
+          search: search,
           onFilter: (f) => setState(() => filter = f),
+          onQuery: (v) => setState(() => query = v),
           onClearPerson: () => setState(() => person = null),
           onOpen: openForm,
           onAdd: () => openForm(null),
         ),
-      'settings' => SettingsScreen(key: const ValueKey('settings'), store: store, onFollow: () => follow.open(1), onLogout: () => openDialog('logout')),
+      'settings' => SettingsScreen(key: const ValueKey('settings'), store: store, onFollow: () => follow.open(1), onLogout: () => openDialog('logout'), onExport: exportCsv),
       _ => OverviewScreen(
           key: const ValueKey('home'),
           store: store,
@@ -259,6 +271,8 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
             tab = 'list';
             person = name;
             filter = 'all';
+            query = '';
+            search.clear();
             collapsed = false;
           }),
         ),
@@ -338,19 +352,14 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
               child: MediaQuery.removePadding(context: context, removeTop: true, removeBottom: true, child: body),
             ),
           ),
-          ClipRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                padding: EdgeInsets.fromLTRB(8, 4, 8, tabBottom),
-                decoration: BoxDecoration(color: c.card.withValues(alpha: c.card.a * .88), border: Border(top: BorderSide(color: c.line))),
-                child: Row(children: [
-                  tabItem('home', 'Overview', Ico.tabOverview),
-                  tabItem('list', 'Records', Ico.tabRecords),
-                  tabItem('settings', 'Settings', Ico.tabSettings),
-                ]),
-              ),
-            ),
+          Container(
+            padding: EdgeInsets.fromLTRB(8, 4, 8, tabBottom),
+            decoration: BoxDecoration(color: c.card.withValues(alpha: c.card.a * .88), border: Border(top: BorderSide(color: c.line))),
+            child: Row(children: [
+              tabItem('home', 'Overview', Ico.tabOverview),
+              tabItem('list', 'Records', Ico.tabRecords),
+              tabItem('settings', 'Settings', Ico.tabSettings),
+            ]),
           ),
         ]),
         if (toast != null)

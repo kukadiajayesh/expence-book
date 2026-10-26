@@ -15,10 +15,10 @@ String displayName(String email) {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required this.store, required this.onFollow, required this.onLogout});
+  const SettingsScreen({super.key, required this.store, required this.onFollow, required this.onLogout, required this.onExport});
 
   final LedgerStore store;
-  final VoidCallback onFollow, onLogout;
+  final VoidCallback onFollow, onLogout, onExport;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,6 @@ class SettingsScreen extends StatelessWidget {
         Transform.translate(offset: const Offset(0, -4), child: Text('Settings', style: ts(34, w: 800, ls: -0.03, height: 1.1, color: c.text))),
         const SizedBox(height: 24),
         Pressable(
-          onTap: () {},
           color: c.card,
           radius: BorderRadius.circular(20),
           border: Border.all(color: c.line),
@@ -71,8 +70,6 @@ class SettingsScreen extends StatelessWidget {
                   Text(store.email, style: ts(14, color: c.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ]),
               ),
-              const SizedBox(width: 14),
-              const Chevron(size: 16),
             ]),
           ),
         ),
@@ -122,7 +119,7 @@ class SettingsScreen extends StatelessWidget {
           GroupRow(
             leading: tile(5, Ico.download),
             divider: false,
-            onTap: () {},
+            onTap: onExport,
             child: Row(children: [
               Expanded(child: Text('Export transactions', style: ts(17, color: c.text))),
               Text('CSV', style: ts(17, color: c.muted)),

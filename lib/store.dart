@@ -51,6 +51,15 @@ class LedgerStore extends ChangeNotifier {
       return d != 0 ? d : b.id - a.id;
     });
 
+  /// All records as CSV text, newest first.
+  String toCsv() {
+    String q(String v) => v.contains(RegExp(r'[",\n]')) ? '"${v.replaceAll('"', '""')}"' : v;
+    return [
+      'Date,Type,Person,Amount,Note',
+      for (final r in sorted) [isoDate(r.date), r.isGot ? 'Received' : 'Paid', q(r.person), r.amount.toStringAsFixed(2), q(r.note)].join(','),
+    ].join('\n');
+  }
+
   void upsert({int? id, required String type, required double amount, required String person, required DateTime date, required String note}) {
     final rec = Txn(id: id ?? _nextId++, type: type, amount: amount, person: person, date: date, note: note);
     records = id == null ? [rec, ...records] : [for (final r in records) r.id == id ? rec : r];
@@ -60,12 +69,12 @@ class LedgerStore extends ChangeNotifier {
 
   /// Deletes a record and returns a callback that restores it.
   VoidCallback delete(int id) {
-    final old = records;
+    final removed = records.where((r) => r.id == id).toList();
     records = records.where((r) => r.id != id).toList();
     _saveRecords();
     notifyListeners();
     return () {
-      records = old;
+      records = [...records, ...removed];
       _saveRecords();
       notifyListeners();
     };

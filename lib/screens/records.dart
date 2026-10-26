@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show TextInputAction;
 import 'package:flutter/widgets.dart';
 
 import '../icons.dart';
@@ -5,6 +6,7 @@ import '../models.dart';
 import '../store.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import 'login.dart' show bareField;
 import 'overview.dart' show TxnRow;
 
 class RecordsScreen extends StatelessWidget {
@@ -13,7 +15,10 @@ class RecordsScreen extends StatelessWidget {
     required this.store,
     required this.filter,
     required this.person,
+    required this.query,
+    required this.search,
     required this.onFilter,
+    required this.onQuery,
     required this.onClearPerson,
     required this.onOpen,
     required this.onAdd,
@@ -22,7 +27,9 @@ class RecordsScreen extends StatelessWidget {
   final LedgerStore store;
   final String filter; // 'all' | 'got' | 'gave'
   final String? person;
-  final ValueChanged<String> onFilter;
+  final String query;
+  final TextEditingController search;
+  final ValueChanged<String> onFilter, onQuery;
   final VoidCallback onClearPerson, onAdd;
   final ValueChanged<Txn> onOpen;
 
@@ -31,7 +38,14 @@ class RecordsScreen extends StatelessWidget {
     final c = context.c;
     final now = DateTime.now();
     final recs = store.sorted;
-    final listed = recs.where((r) => (filter == 'all' || r.type == filter) && (person == null || r.person == person)).toList();
+    final q = query.trim().toLowerCase();
+    final qNum = q.replaceAll(RegExp(r'[₹,\s]'), '');
+    bool matches(Txn r) =>
+        q.isEmpty ||
+        r.person.toLowerCase().contains(q) ||
+        r.note.toLowerCase().contains(q) ||
+        (qNum.isNotEmpty && r.amount.toStringAsFixed(2).contains(qNum));
+    final listed = recs.where((r) => (filter == 'all' || r.type == filter) && (person == null || r.person == person) && matches(r)).toList();
 
     final groups = <(DateTime, List<Txn>)>[];
     for (final r in listed) {
@@ -50,6 +64,30 @@ class RecordsScreen extends StatelessWidget {
     final controls = recs.isEmpty
         ? null
         : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              height: 44,
+              padding: const EdgeInsets.only(left: 14),
+              decoration: BoxDecoration(color: c.card, border: Border.all(color: c.line), borderRadius: BorderRadius.circular(12)),
+              child: Row(children: [
+                Ico(Ico.search, size: 18, color: c.muted, stroke: 2.25),
+                const SizedBox(width: 10),
+                Expanded(child: bareField(context, controller: search, hint: 'Search name, note or amount', action: TextInputAction.search, onChanged: onQuery)),
+                if (query.isNotEmpty)
+                  Semantics(
+                    label: 'Clear search',
+                    button: true,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        search.clear();
+                        onQuery('');
+                      },
+                      child: SizedBox(width: 44, height: 44, child: Center(child: Ico(Ico.close, size: 18, color: c.muted, stroke: 2.5))),
+                    ),
+                  ),
+              ]),
+            ),
+            const SizedBox(height: 12),
             Segmented<String>(options: const [('all', 'All'), ('got', 'Received'), ('gave', 'Paid')], value: filter, onChanged: onFilter),
             if (person != null) ...[
               const SizedBox(height: 10),
@@ -92,7 +130,11 @@ class RecordsScreen extends StatelessWidget {
                       ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 270),
                         child: Text(
-                          none ? 'Every payment you make or receive from someone will be listed here, grouped by day.' : 'No ${kind}transactions${person != null ? ' with $person' : ''}.',
+                          none
+                              ? 'Every payment you make or receive from someone will be listed here, grouped by day.'
+                              : q.isNotEmpty
+                                  ? 'No ${kind}transactions match “${query.trim()}”${person != null ? ' with $person' : ''}.'
+                                  : 'No ${kind}transactions${person != null ? ' with $person' : ''}.',
                           textAlign: TextAlign.center,
                           style: ts(15, height: 1.5, color: c.muted),
                         ),
@@ -107,6 +149,8 @@ class RecordsScreen extends StatelessWidget {
                             : () {
                                 onFilter('all');
                                 onClearPerson();
+                                search.clear();
+                                onQuery('');
                               },
                       ),
                     ]),

@@ -22,6 +22,7 @@ class Ico extends StatelessWidget {
   static const arrowOut = '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>';
   static const userPlus = '<circle cx="9" cy="8" r="4"/><path d="M3 21a6 6 0 0 1 12 0"/><path d="M19 8v6"/><path d="M16 11h6"/>';
   static const chevron = '<path d="m9 18 6-6-6-6"/>';
+  static const search = '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>';
   static const close = '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>';
   static const notebook = '<path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.38 5.63a2.12 2.12 0 0 0-3-3l-7.39 7.4a2 2 0 0 0-.5.84l-.83 2.87a.5.5 0 0 0 .62.62l2.87-.84a2 2 0 0 0 .84-.5Z"/>';
   static const clock = '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>';

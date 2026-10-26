@@ -278,7 +278,7 @@ class FollowSheet extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const Grabber(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 8, 8),
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
             child: Row(children: [
               const Expanded(child: SizedBox()),
               Text('Follow up after', style: ts(17, w: 700, color: c.text)),
