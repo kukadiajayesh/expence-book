@@ -79,8 +79,8 @@ void main() {
 
   testWidgets('sign in, add a transaction, see it on Overview', (t) async {
     await pumpApp(t);
-    expect(find.text('Welcome back'), findsOneWidget);
-    await t.tap(find.text('Sign in'));
+    expect(find.text('Connect to Odoo'), findsOneWidget);
+    await t.tap(find.text('Use without Odoo'));
     await t.pumpAndSettle();
     expect(find.text('Start your ledger'), findsOneWidget);
 
@@ -167,7 +167,7 @@ void main() {
     expect(find.text('Log out of Ledger?'), findsOneWidget);
     await t.tap(find.text('Log out').last);
     await t.pumpAndSettle();
-    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Connect to Odoo'), findsOneWidget);
     expect(store.loggedIn, isFalse);
   });
 }

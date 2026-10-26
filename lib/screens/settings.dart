@@ -6,24 +6,27 @@ import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/net_card.dart' show DotGridPainter;
 
-/// "alex.morgan@x.com" → "Alex Morgan".
-String displayName(String email) {
-  final local = email.split('@').first;
-  final words = local.split(RegExp(r'[._\-+]+')).where((w) => w.isNotEmpty);
-  final name = words.map((w) => w[0].toUpperCase() + w.substring(1)).join(' ');
-  return name.isEmpty ? 'You' : name;
+/// One line for the Odoo sync row.
+String syncLabel(LedgerStore s) {
+  if (s.status == SyncStatus.syncing) return 'Syncing…';
+  if (s.status == SyncStatus.authFailed) return 'Key rejected';
+  if (s.failedCount > 0) return '${s.failedCount} failed';
+  if (s.pendingCount > 0) return '${s.pendingCount} waiting';
+  if (s.status == SyncStatus.offline) return 'Offline';
+  return 'Up to date';
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key, required this.store, required this.onFollow, required this.onLogout, required this.onExport});
+  const SettingsScreen({super.key, required this.store, required this.onFollow, required this.onLogout, required this.onExport, required this.onSync});
 
   final LedgerStore store;
-  final VoidCallback onFollow, onLogout, onExport;
+  final VoidCallback onFollow, onLogout, onExport, onSync;
 
   @override
   Widget build(BuildContext context) {
     final c = context.c;
-    final name = displayName(store.email);
+    final name = store.config?.db ?? 'On this device';
+    final where = store.config?.host ?? 'Not connected to Odoo';
 
     Widget tile(int i, String icon) => Container(
           width: 30,
@@ -67,7 +70,7 @@ class SettingsScreen extends StatelessWidget {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(name, style: ts(19, w: 700, ls: -0.01, color: c.text), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
-                  Text(store.email, style: ts(14, color: c.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(where, style: ts(14, color: c.muted), maxLines: 1, overflow: TextOverflow.ellipsis),
                 ]),
               ),
             ]),
@@ -116,6 +119,17 @@ class SettingsScreen extends StatelessWidget {
         const SizedBox(height: 8),
         InsetGroup(children: [
           switchRow(4, Ico.lock, 'Require Face ID', store.faceId, (v) => store.setSwitch('faceId', v)),
+          if (store.connected)
+            GroupRow(
+              leading: tile(3, Ico.sync),
+              onTap: onSync,
+              child: Row(children: [
+                Expanded(child: Text('Odoo sync', style: ts(17, color: c.text))),
+                Text(syncLabel(store), style: ts(17, color: store.status == SyncStatus.authFailed || store.failedCount > 0 ? c.expense : c.muted)),
+                const SizedBox(width: 8),
+                const Chevron(),
+              ]),
+            ),
           GroupRow(
             leading: tile(5, Ico.download),
             divider: false,

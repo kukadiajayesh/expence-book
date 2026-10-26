@@ -27,7 +27,7 @@ class Shell extends StatefulWidget {
   State<Shell> createState() => _ShellState();
 }
 
-class _ShellState extends State<Shell> with TickerProviderStateMixin {
+class _ShellState extends State<Shell> with TickerProviderStateMixin, WidgetsBindingObserver {
   LedgerStore get store => widget.store;
 
   String tab = 'home'; // 'home' | 'list' | 'settings'
@@ -48,7 +48,20 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
   final formScrollKey = GlobalKey(), followScrollKey = GlobalKey();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    store.sync();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) store.sync();
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _toastTimer?.cancel();
     for (final c in [form, follow, confirm]) {
       c.dispose();
@@ -74,6 +87,11 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
   void hideToast() {
     _toastTimer?.cancel();
     setState(() => toast = null);
+  }
+
+  Future<void> syncNow() async {
+    await store.sync();
+    showToast(store.syncError ?? 'Synced with Odoo');
   }
 
   void exportCsv() {
@@ -221,7 +239,9 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
                   title: dialog == 'delete' ? 'Delete this transaction?' : 'Log out of Ledger?',
                   body: dialog == 'delete'
                       ? '${draft.type == 'got' ? 'Received from' : 'Paid to'} ${draft.person.text.trim()} · ${fmt(draft.parsedAmount)} will be removed.'
-                      : 'You’ll need to sign in again to see your transactions.',
+                      : store.connected
+                          ? 'You’ll need to connect to Odoo again.${store.pendingCount > 0 ? ' ${store.pendingCount} change${store.pendingCount == 1 ? '' : 's'} not yet sent to Odoo will be lost.' : ''}'
+                          : 'You’ll need to sign in again to see your transactions.',
                   cta: dialog == 'delete' ? 'Delete transaction' : 'Log out',
                   onConfirm: confirmAction,
                   onCancel: confirm.close,
@@ -260,7 +280,7 @@ class _ShellState extends State<Shell> with TickerProviderStateMixin {
           onOpen: openForm,
           onAdd: () => openForm(null),
         ),
-      'settings' => SettingsScreen(key: const ValueKey('settings'), store: store, onFollow: () => follow.open(1), onLogout: () => openDialog('logout'), onExport: exportCsv),
+      'settings' => SettingsScreen(key: const ValueKey('settings'), store: store, onFollow: () => follow.open(1), onLogout: () => openDialog('logout'), onExport: exportCsv, onSync: syncNow),
       _ => OverviewScreen(
           key: const ValueKey('home'),
           store: store,

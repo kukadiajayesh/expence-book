@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' show TextField, InputDecoration, InputBor
 import 'package:flutter/services.dart' show TextInputAction, TextInputFormatter;
 import 'package:flutter/widgets.dart';
 
+import '../data/odoo_client.dart' show OdooException;
 import '../icons.dart';
 import '../store.dart';
 import '../theme.dart';
@@ -84,23 +85,39 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late final _email = TextEditingController(text: widget.store.email);
-  final _password = TextEditingController(text: 'demo1234');
+  final _url = TextEditingController();
+  final _db = TextEditingController();
+  final _key = TextEditingController();
   String _err = '';
+  bool _busy = false;
 
   @override
   void dispose() {
-    _email.dispose();
-    _password.dispose();
+    _url.dispose();
+    _db.dispose();
+    _key.dispose();
     super.dispose();
   }
 
-  void _submit() {
-    final email = _email.text.trim();
-    if (!RegExp(r'^\S+@\S+\.\S+$').hasMatch(email)) return setState(() => _err = 'Enter a valid email address.');
-    if (_password.text.length < 4) return setState(() => _err = 'Password must be at least 4 characters.');
+  Future<void> _submit() async {
+    if (_busy) return;
+    if (_url.text.trim().isEmpty) return setState(() => _err = 'Enter your Odoo server address.');
+    if (_db.text.trim().isEmpty) return setState(() => _err = 'Enter the database name.');
+    if (_key.text.trim().isEmpty) return setState(() => _err = 'Enter your API key.');
     FocusScope.of(context).unfocus();
-    widget.store.login(email);
+    setState(() {
+      _busy = true;
+      _err = '';
+    });
+    try {
+      await widget.store.connect(url: _url.text, db: _db.text, apiKey: _key.text);
+    } on OdooException catch (e) {
+      if (mounted) setState(() => _err = e.message);
+    } catch (e) {
+      if (mounted) setState(() => _err = 'Could not connect: $e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   @override
@@ -126,19 +143,23 @@ class _LoginScreenState extends State<LoginScreen> {
           ThemeToggle(store: widget.store, boxed: true),
         ]),
         const SizedBox(height: 28 + 36),
-        Text('Welcome back', style: ts(34, w: 800, ls: -0.03, height: 1.1, color: c.text)),
+        Text('Connect to Odoo', style: ts(34, w: 800, ls: -0.03, height: 1.1, color: c.text)),
         const SizedBox(height: 8),
-        Text('Sign in to see what you’ve paid and received.', style: ts(17, height: 1.45, color: c.muted)),
+        Text('Your payments are saved in Odoo and kept on this phone for when you are offline.', style: ts(17, height: 1.45, color: c.muted)),
         const SizedBox(height: 28),
         InsetGroup(children: [
           GroupRow(
-            leading: SizedBox(width: 84, child: Text('Email', style: ts(17, color: c.text))),
-            child: bareField(context, controller: _email, keyboard: TextInputType.emailAddress, action: TextInputAction.next, onChanged: clear),
+            leading: SizedBox(width: 84, child: Text('Server', style: ts(17, color: c.text))),
+            child: bareField(context, controller: _url, hint: 'odoo.example.com', keyboard: TextInputType.url, action: TextInputAction.next, onChanged: clear),
           ),
           GroupRow(
-            leading: SizedBox(width: 84, child: Text('Password', style: ts(17, color: c.text))),
+            leading: SizedBox(width: 84, child: Text('Database', style: ts(17, color: c.text))),
+            child: bareField(context, controller: _db, hint: 'database name', action: TextInputAction.next, onChanged: clear),
+          ),
+          GroupRow(
+            leading: SizedBox(width: 84, child: Text('API key', style: ts(17, color: c.text))),
             divider: false,
-            child: bareField(context, controller: _password, obscure: true, action: TextInputAction.go, onChanged: clear, onSubmitted: (_) => _submit()),
+            child: bareField(context, controller: _key, obscure: true, hint: 'paste your key', action: TextInputAction.go, onChanged: clear, onSubmitted: (_) => _submit()),
           ),
         ]),
         if (_err.isNotEmpty) ...[
@@ -146,9 +167,22 @@ class _LoginScreenState extends State<LoginScreen> {
           Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(_err, style: ts(13, w: 600, color: c.expense))),
         ],
         const SizedBox(height: 8),
-        Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text('Demo account is prefilled.', style: ts(13, color: c.muted))),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text('Needs Odoo 19. Create a key in Odoo under Preferences → Account Security → New API Key.', style: ts(13, height: 1.4, color: c.muted)),
+        ),
         const SizedBox(height: 28),
-        AccentButton('Sign in', onTap: _submit),
+        AccentButton(_busy ? 'Connecting…' : 'Connect', onTap: _submit),
+        const SizedBox(height: 12),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: _busy ? null : widget.store.useLocally,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 44),
+            alignment: Alignment.center,
+            child: Text('Use without Odoo', style: ts(15, w: 600, color: c.accent)),
+          ),
+        ),
       ],
     );
   }
